@@ -9,7 +9,9 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 BOTS = ROOT / "bots"
+GROUPS = ROOT / "groups"
 REQUIRED = 20
+GROUP_SIZE = 6
 BANNED = (
     "you are a helpful",
     "general helper",
@@ -21,6 +23,10 @@ PIPELINE = re.compile(r"(→|->|gather|rank|draft|return)", re.I)
 NAME = re.compile(r"^[a-z][a-z0-9-]{0,23}$")
 FRONT = re.compile(
     r"^---\nname:\s*(.+)\njob:\s*(.+)\ncategory:\s*(.+)\nplugins:\s*\[(.*?)\]\n---\n",
+    re.S,
+)
+GROUP_FRONT = re.compile(
+    r"^---\nname:\s*(.+)\ntitle:\s*(.+)\nbots:\s*\[(.*?)\]\n---\n",
     re.S,
 )
 
@@ -74,6 +80,47 @@ def main() -> None:
         if "first task" not in low:
             fail(f"{path.name}: missing First task")
     print(f"ok {len(files)} bots")
+    validate_groups(names)
+
+
+def validate_groups(bot_names: set[str]) -> None:
+    files = sorted(GROUPS.glob("*.md"))
+    if not files:
+        fail("want at least one groups/*.md")
+    seen: set[str] = set()
+    for path in files:
+        text = path.read_text(encoding="utf-8")
+        m = GROUP_FRONT.match(text)
+        if not m:
+            fail(f"{path.name}: front matter must be name, title, bots")
+        name, title, raw_bots = (x.strip() for x in m.groups())
+        if path.stem != name:
+            fail(f"{path.name}: filename stem must equal name {name!r}")
+        if not NAME.match(name):
+            fail(f"{path.name}: name must be short lowercase")
+        if name in seen:
+            fail(f"duplicate group {name}")
+        seen.add(name)
+        if not title:
+            fail(f"{path.name}: empty title")
+        roster = [b.strip() for b in raw_bots.split(",") if b.strip()]
+        if len(roster) != GROUP_SIZE:
+            fail(f"{path.name}: want {GROUP_SIZE} bots, got {len(roster)}")
+        if len(set(roster)) != GROUP_SIZE:
+            fail(f"{path.name}: duplicate bot on the roster")
+        for bot in roster:
+            if bot not in bot_names:
+                fail(f"{path.name}: unknown bot {bot}")
+            if f"@{bot}" not in text.lower():
+                fail(f"{path.name}: kickoff must @{bot}")
+        low = text.lower()
+        if "## kickoff" not in low:
+            fail(f"{path.name}: missing Kickoff")
+        if "## hard stop" not in low:
+            fail(f"{path.name}: missing Hard stop")
+        if not HARD_STOP.search(text):
+            fail(f"{path.name}: needs a hard stop")
+    print(f"ok {len(files)} groups")
 
 
 if __name__ == "__main__":

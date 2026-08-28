@@ -17,6 +17,25 @@ Put durable rules in the description. Put today's work in the chat. Test runs do
 
 All of your Bots share one cloud computer. A login or a file on that computer is available to every Bot.
 
+## Stand up a group of six
+
+Grok Bot can put six Bots in one group chat. Reuse Bots you already created. Add the same Bot to more than one group.
+
+1. Create the six profiles if they are missing. Paste from `bots/`.
+2. Choose **New** then a group chat. Add exactly those six.
+3. Name the group after the recipe (`ship`, `morning`, `accounts`, `gtm`, `decide`).
+4. Paste **Kickoff** from the recipe. Fill the placeholders. Send.
+
+The group is for the handoff. Durable rules stay on each Bot's description.
+
+| Group | Job | Six Bots | File |
+| --- | --- | --- | --- |
+| ship | One change, goal to docs | loops, scope, tickets, repro, review, docs | [groups/ship.md](groups/ship.md) |
+| morning | Start the day | desk, brief, inbox, notes, ledger, subs | [groups/morning.md](groups/morning.md) |
+| accounts | One customer | desk, health, notes, tickets, replies, claims | [groups/accounts.md](groups/accounts.md) |
+| gtm | One campaign | watch, scout, voice, claims, health, notes | [groups/gtm.md](groups/gtm.md) |
+| decide | One market decision | tape, watch, claims, scope, review, notes | [groups/decide.md](groups/decide.md) |
+
 ## The twenty
 
 ### Eng
@@ -70,7 +89,7 @@ All of your Bots share one cloud computer. A login or a file on that computer is
 py -3 scripts/validate.py
 ```
 
-The script fails a profile that looks like a general helper, lacks a hard stop, or drifts from the `loops` shape.
+The script fails a profile that looks like a general helper, lacks a hard stop, or drifts from the `loops` shape. It also fails a group that is not exactly six Bots from this catalog.
 
 ## License
 
